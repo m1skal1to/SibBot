@@ -7,6 +7,8 @@ class BotConfig:
     token: str
     bot_admin: str
     use_redis: bool
+    app_url: str
+    port: str
 
 
 @dataclass
@@ -31,6 +33,8 @@ def load_config():
         bot= BotConfig(
             token=env.str('BOT_TOKEN'),
             bot_admin=env.int('BOT_ADMIN'),
+            app_url=env.str('APP_URL'),
+            port=env.str(),
             use_redis=env.bool('REDIS')
         ),
         db=DbConfig(

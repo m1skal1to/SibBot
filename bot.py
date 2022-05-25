@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.utils.executor import start_webhook
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
@@ -26,11 +27,26 @@ async def main():
     storage = MemoryStorage()
     bot = Bot(token=config.bot.token, parse_mode='HTML')
     dp = Dispatcher(bot, storage=storage)
+    webhook_url = config.bot.token + config.bot.app_url
 
     register_handlers(dp)
 
+    async def on_startup():
+        await bot.set_webhook(webhook_url, drop_pending_updates=True)
+
+    async def on_shutdown():
+        await bot.delete_webhook()
+
     try:
-        await dp.start_polling()
+        await start_webhook(
+            dispatcher=dp,
+            webhook_path=config.bot.token + config.bot.app_url,
+            skip_updates=True,
+            on_startup=on_startup,
+            on_shutdown=on_shutdown,
+            host=config.bot.app_url,
+            port=config.bot.port
+        )
     finally:
         await dp.storage.close()
         await dp.storage.wait_closed()
